@@ -15,11 +15,14 @@ import Profile from './components/Profile';
 import ForgotPassword from './components/ForgotPassword';
 import UpdateProfile from './components/UpdateProfile';
 import {auth} from './firebase'
-import { render } from '@testing-library/react';
 import axios from 'axios'
 import BankLink from './components/BankLink';
 import TransactionsContainer from './components/TransactionsContainer'
 import BalanceContainer from './components/BalanceContainer';
+import PageHome from './components/PageHome';
+import logo from './images/BBSLogo.png'
+import AccountCard from './components/AccountCard';
+import Chart from './components/Chart';
 
 
 export default class App extends Component {
@@ -28,8 +31,10 @@ export default class App extends Component {
     token: null,
     access_token: null,
     transactions: [],
-    balances: []
+    balances: [],
+    user: null
   }
+
 
   //Grabs temporary Link token generated from server and updates state with it client side
   createLinkToken = async () => {
@@ -41,6 +46,10 @@ export default class App extends Component {
   //Ensures above action runs upon page load
   componentDidMount(){
     auth.onAuthStateChanged(userAuth => {
+      if(userAuth){
+        const userAccessToken = localStorage.getItem(userAuth.uid)
+        this.setState({ access_token: userAccessToken })
+      }
       this.setState({ user: userAuth});
     });
     this.createLinkToken()
@@ -53,25 +62,27 @@ export default class App extends Component {
     const data = res.data.access_token
     //updates state with permanent access token
     this.setState({ access_token: data})
+    localStorage.setItem(this.state.user.uid, data)
+    console.log(`this is locally stored ${localStorage.accessToken}`)
   }
 
 
 
   render(){
     return (
-      <div>
+      <div style={{backgroundColor: 'lightblue', minHeight: '100vh'}}>
         <Router>
       <nav className="topnav">
         <div>
-        <Link to="/" className="link">Home</Link>
+        <Link to="/" className="link" style={{fontFamily: "Nunito"}}><img src={logo}/>Better Budgeting Systems</Link>
         </div>
 
-        <div>
-        <Link to='/login' className="link">Log In</Link>
+        <div style={{display: 'flex', alignItems: 'flex-end', float: 'right'}}>
+        {!this.state.user && <Link to='/signup' className="link">Sign Up</Link>}
+        {!this.state.user && <Link to='/login' className="link">Log In</Link>}
+        {this.state.access_token && this.state.user && <Link to ='/accounts' className="link">Accounts</Link>}
         {this.state.user && <Link to='/profile' className="link">Profile</Link>}
-        <Link to='/link' className="link">Link</Link>
-        <Link to ='/transactions' className="link">Transactions</Link>
-        <Link to ='/balances' className="link">Balances</Link>
+        {this.state.user && !this.state.access_token && <Link to='/link' className="link">Link</Link>}
         </div>
       </nav>
         <AuthProvider>
@@ -82,12 +93,14 @@ export default class App extends Component {
           <BankLink token={this.state.token} accessToken={this.state.access_token} getAccessToken={this.getAccessToken} />
           </div>
           </Route>
+          <Route path='/accounts'><AccountCard accessToken={this.state.access_token}/></Route>
+          <Route path='/chart'><Chart accessToken={this.state.access_token}/></Route>
           <Route path='/balances'>
           <div>
           <BalanceContainer accessToken={this.state.access_token} />
           </div>
           </Route>
-          <Route exact path='/'><div className="header"><h1>Better Budgeting Systems</h1></div></Route>
+          <Route exact path='/' ><PageHome user={this.state.user}/></Route>
           <Route path="/signup">
             <Container className="d-flex align-items-center justify-content-center" style={{ minHeight: "100vh",}}>
               <div className="w-100" style={{ maxWidth: '400px'}}>

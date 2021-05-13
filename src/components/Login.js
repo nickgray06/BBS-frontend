@@ -19,7 +19,7 @@ export default function Login() {
       setError('')
       setLoading(true)
       await login(emailRef.current.value, passwordRef.current.value)
-      history.push('/')
+      history.push('/accounts')
     } catch {
       setError("Failed to sign in")
     }
@@ -29,7 +29,7 @@ export default function Login() {
 
   return (
     <>
-      <Card>
+      <Card >
         <Card.Body>
           <h2 className="text-center mb-4">Log In</h2>
           {error && <Alert variant="danger">{error}</Alert>}

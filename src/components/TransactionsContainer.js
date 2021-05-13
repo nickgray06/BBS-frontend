@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useAuth } from '../contexts/AuthContext'
+import TransactionCard from "./TransactionCard";
+import Chart from "./Chart";
+
 
 export default function TransactionsContainer(props) {
-  const { currentUser } = useAuth()
-  console.log(currentUser.uid)
+
   const [transactions, setTransactions] = useState([]);
 
   useEffect(() => {
@@ -24,18 +26,14 @@ export default function TransactionsContainer(props) {
     iWantTransactions();
   }, [props.accessToken]);
 
+  // const displayTransactions = () => transactions.map(transaction => {
+  //   return <Chart key={transaction.transaction_id} transaction={transaction} />
+  // })
+
   return (
-    <div>
-      <h1>This is Transactions!</h1>
-      {transactions.map((transaction) => {
-        return (
-          <div key={transaction.transaction_id}>
-            <p>{transaction.name}</p>
-            <p>{transaction.amount}</p>
-            <p>{transaction.date}</p>
-          </div>
-        );
-      })}
+    <div style={{padding: '60px'}} > 
+        <TransactionCard transactions={transactions} />
+        <Chart transactions={transactions} />
     </div>
   );
 }
